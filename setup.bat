@@ -38,7 +38,7 @@ if not exist .env (
 )
 
 echo Subindo containers Docker...
-docker-compose up -d --build
+docker-compose -f docker-compose-complete.yml up -d --build
 
 echo Setup concluido!
 pause
