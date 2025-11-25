@@ -1,0 +1,136 @@
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      # Descoberta automática de rotas via Eureka
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      
+      # Rotas manuais
+      routes:
+        # Auth Service
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - StripPrefix=1
+        
+        # Academic Service
+        - id: academic-service
+          uri: lb://academic-service
+          predicates:
+            - Path=/academic-service/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+        
+        # Student Service
+        - id: student-service
+          uri: lb://student-service
+          predicates:
+            - Path=/student-service/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+        
+        # Monitoring Service
+        - id: monitoring-service
+          uri: lb://monitoring-service
+          predicates:
+            - Path=/monitoring-service/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+        
+        # Attendance Service
+        - id: attendance-service
+          uri: lb://attendance-service
+          predicates:
+            - Path=/attendance-service/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+        
+        # Content Service
+        - id: content-service
+          uri: lb://content-service
+          predicates:
+            - Path=/content-service/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+        
+        # Reporting Service
+        - id: reporting-service
+          uri: lb://reporting-service
+          predicates:
+            - Path=/reporting-service/**
+          filters:
+            - StripPrefix=1
+            - AuthenticationFilter
+      
+      # Configurações globais
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      
+      # CORS Global
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - "http://localhost:4200"
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowed-headers:
+              - "*"
+            allow-credentials: true
+            max-age: 3600
+
+server:
+  port: 8080
+
+# Eureka Client
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
+    br.ucsal.monitoria: DEBUG
